@@ -1,8 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -469,7 +467,7 @@ const DEFAULT_FILTERS: FiltersState = {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function TherapistsPage() {
+function TherapistsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -736,5 +734,13 @@ export default function TherapistsPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function TherapistsPage() {
+  return (
+    <Suspense>
+      <TherapistsContent />
+    </Suspense>
   );
 }
