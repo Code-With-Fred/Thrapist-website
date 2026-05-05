@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /client/
+Disallow: /therapist/
+Disallow: /admin/
+Disallow: /connect/
+Disallow: /matches/
+Disallow: /api/
+
+Sitemap: https://healmate.app/sitemap.xml
