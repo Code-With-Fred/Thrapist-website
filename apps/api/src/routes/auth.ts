@@ -73,7 +73,7 @@ function setRefreshCookie(res: Response, token: string): void {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: config.env === 'production',
-    sameSite: config.env === 'production' ? 'strict' : 'lax',
+    sameSite: config.env === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/api/v1/auth/refresh',
   });
@@ -180,16 +180,9 @@ router.get(
   (req: Request, res: Response): void => {
     const result = req.user as unknown as { user: Record<string, unknown>; accessToken: string; refreshToken: string };
     setRefreshCookie(res, result.refreshToken);
-    // Clear the pending role cookie
     res.clearCookie('pendingRole');
-    // Pass access token in a short-lived cookie readable by JS (not URL — avoids leaking in logs/history)
-    res.cookie('oauthToken', result.accessToken, {
-      httpOnly: false,
-      secure: config.env === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 1000, // 1 minute — frontend reads and clears immediately
-    });
-    res.redirect(`${config.frontendUrl}/oauth-callback`);
+    // Pass token in URL param — cookies can't cross domains (API on Railway, frontend on Vercel)
+    res.redirect(`${config.frontendUrl}/oauth-callback?token=${encodeURIComponent(result.accessToken)}`);
   },
 );
 

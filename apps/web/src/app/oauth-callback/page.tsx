@@ -6,22 +6,14 @@ import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 
-function getCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]!) : null;
-}
-
-function deleteCookie(name: string): void {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-}
-
 export default function OAuthCallbackPage() {
   const router = useRouter();
   const { setUser, setAccessToken } = useAuthStore();
 
   useEffect(() => {
-    const token = getCookie('oauthToken');
+    // Read token from URL search params — works cross-domain unlike cookies
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
     if (!token) {
       toast.error('Google sign-in failed. Please try again.');
@@ -41,8 +33,8 @@ export default function OAuthCallbackPage() {
       setAccessToken(token);
       setUser({ id: payload.userId, email: payload.email, role: payload.role, isVerified: true });
 
-      // Clear the short-lived cookie immediately
-      deleteCookie('oauthToken');
+      // Clean token from URL so it's not visible in history
+      window.history.replaceState({}, '', '/oauth-callback');
 
       toast.success('Signed in with Google!');
 
